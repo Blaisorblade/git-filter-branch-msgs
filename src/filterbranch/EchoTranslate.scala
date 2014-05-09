@@ -28,15 +28,8 @@ object EchoTranslate {
 
   def canonicalizeHash(partialHash: String) =
     Try[String] {
-      val outBuf = new StringBuffer
-      val cmd = s"git rev-parse $partialHash"
-      //val log = BasicIO(false, outBuf, Some(ProcessLogger(errLine => errLogger println errLine)))
-
-      //Should be cmd ! log, but that method is hidden inside ProcessBuilder.
-      //val exit = cmd.run(log).exitValue
-
-      //outBuf.toString()
-      (cmd !! ProcessLogger(errLine => errLogger.value println errLine)).trim
+      // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
+      (s"git rev-parse $partialHash" !! ProcessLogger(errLine => errLogger.value println errLine)).trim
     }
 
   //Implements map from git-filter-branch.
