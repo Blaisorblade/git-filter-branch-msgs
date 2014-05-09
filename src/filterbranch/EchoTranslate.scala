@@ -1,18 +1,15 @@
 package filterbranch
 
-import language.implicitConversions
+import java.io.{File, FileNotFoundException, FileWriter, PrintWriter}
+
 import scala.io.Source
-import scala.util._
-import scala.sys.process._
-
-import java.io.File
-import java.io.PrintWriter
-import java.io.FileWriter
-import java.io.FileNotFoundException
-
-import PathConvs._
+import scala.language.implicitConversions
+import scala.sys.process.{Process, ProcessLogger}
+import scala.util.{DynamicVariable, Try}
 
 import com.martiansoftware.nailgun.NGContext
+
+import PathConvs._
 
 object EchoTranslate {
   //Minimal length of hex string for it to be considered an hash.
