@@ -74,7 +74,8 @@ object EchoTranslate {
   }
 
   def nailMain(context: NGContext) {
+    context.assertLocalClient()
     cwd.value = new File(context.getWorkingDirectory())
-    main(Array())
+    main(context.getArgs())
   }
 }
