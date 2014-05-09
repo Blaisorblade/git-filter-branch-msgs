@@ -39,8 +39,9 @@ object EchoTranslate {
       if (output.exists())
         Source.fromFile(output).mkString.trim()
       else {
-        errLogger.value println ("'" + output + "'")
-        throw new FileNotFoundException(output.getCanonicalPath())
+        val errMsg = s"${output.getCanonicalPath} does not exist!"
+        errLogger.value println errMsg
+        throw new FileNotFoundException(errMsg)
       }
     }
 
