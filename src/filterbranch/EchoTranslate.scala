@@ -24,14 +24,15 @@ object EchoTranslate {
   // XXX: Should match on whole words.
   val filterCommitId = s"[0-9a-f]{${minLength},40}".r
 
-  val tmpDirF = new File(tmpDir)
+  def tmpDirF = cwd.value / tmpDir
   val errLogName = "echo-translate.log"
   val errLogger = new DynamicVariable[PrintWriter](null)
+  val cwd = new DynamicVariable[File](new File("."))
 
   def canonicalizeHash(partialHash: String) =
     Try[String] {
       // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
-      (s"git rev-parse $partialHash" !! ProcessLogger(errLine => errLogger.value println errLine)).trim
+      (Process(s"git rev-parse $partialHash", cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine)).trim
     }
 
   //Implements map from git-filter-branch.
@@ -59,8 +60,8 @@ object EchoTranslate {
 
   def main(args: Array[String]) {
     //This must be reopened each time main is called.
-    val newErr = new PrintWriter(new FileWriter(errLogName, /* append = */ true), /* autoFlush = */ true)
-    newErr.println(s"Starting in ${new File(".").getCanonicalPath()}")
+    val newErr = new PrintWriter(new FileWriter(cwd.value / errLogName, /* append = */ true), /* autoFlush = */ true)
+    newErr.println(s"Starting in ${cwd.value.getCanonicalPath()}")
     try {
       errLogger.withValue(newErr) {
         val outWriter = new PrintWriter(System.out, /*autoFlush = */ true)
@@ -74,6 +75,7 @@ object EchoTranslate {
   }
 
   def nailMain(context: NGContext) {
+    cwd.value = new File(context.getWorkingDirectory())
     main(Array())
   }
 }
