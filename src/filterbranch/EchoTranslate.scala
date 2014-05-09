@@ -21,8 +21,7 @@ object EchoTranslate {
   val minLength = 5
   // XXX: this can be configured for git-filter-branch, we should allow the same.
   val tmpDir = ".git-rewrite"
-  // XXX: Should match on whole words.
-  val filterCommitId = s"[0-9a-f]{${minLength},40}".r
+  val filterCommitId = raw"""\b[0-9a-f]{${minLength},40}\b""".r
 
   def tmpDirF = cwd.value / tmpDir
   val errLogName = "echo-translate.log"
