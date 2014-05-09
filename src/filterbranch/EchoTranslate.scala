@@ -4,8 +4,6 @@ import language.implicitConversions
 import scala.io.Source
 import scala.util._
 import scala.sys.process._
-//Only for Eclipse
-import scala.sys.process.stringToProcess
 
 import java.io.File
 import java.io.PrintWriter
