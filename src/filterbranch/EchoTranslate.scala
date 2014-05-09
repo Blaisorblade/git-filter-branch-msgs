@@ -14,6 +14,8 @@ import java.io.FileNotFoundException
 
 import PathConvs._
 
+import com.martiansoftware.nailgun.NGContext
+
 object EchoTranslate {
   //Minimal length of hex string for it to be considered an hash.
   val minLength = 5
@@ -69,5 +71,9 @@ object EchoTranslate {
     } finally {
       newErr.close()
     }
+  }
+
+  def nailMain(context: NGContext) {
+    main(Array())
   }
 }
