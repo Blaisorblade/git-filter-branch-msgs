@@ -1,13 +1,14 @@
 package filterbranch
 
 import java.io.{File, FileNotFoundException, FileWriter, PrintWriter}
+import java.net.InetAddress
 
 import scala.io.Source
 import scala.language.implicitConversions
 import scala.sys.process.{Process, ProcessLogger}
 import scala.util.{DynamicVariable, Try}
 
-import com.martiansoftware.nailgun.NGContext
+import com.martiansoftware.nailgun.{Alias, NGConstants, NGContext, NGServer}
 
 import PathConvs._
 
@@ -72,5 +73,13 @@ object EchoTranslate {
     context.assertLocalClient()
     cwd.value = new File(context.getWorkingDirectory())
     main(context.getArgs())
+  }
+}
+
+object Server {
+  def main(args: Array[String]) {
+    val server = new NGServer(InetAddress.getLoopbackAddress(), NGConstants.DEFAULT_PORT)
+    server.getAliasManager().addAlias(new Alias("git-rev-translate", "Foo", Class.forName(EchoTranslate.getClass().getName stripSuffix "$")))
+    new Thread(server).start()
   }
 }

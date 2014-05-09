@@ -10,7 +10,7 @@ javaSource in Test := baseDirectory.value / "test-src"
 
 libraryDependencies ++= Seq("com.martiansoftware" % "nailgun-server" % "0.9.1")
 
-mainClass := Some("com.martiansoftware.nailgun.NGServer")
+mainClass := Some("filterbranch.Server")
 
 mainClass in Compile := mainClass.value
 
