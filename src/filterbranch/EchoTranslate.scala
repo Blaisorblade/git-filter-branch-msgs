@@ -23,7 +23,7 @@ object EchoTranslate {
   val filterCommitId = s"[0-9a-f]{${minLength},40}".r
 
   val tmpDirF = new File(tmpDir)
-  val errLogFile = "echo-translate.log"
+  val errLogName = "echo-translate.log"
   val errLogger = new DynamicVariable[PrintWriter](null)
 
   def canonicalizeHash(partialHash: String) =
@@ -57,7 +57,7 @@ object EchoTranslate {
 
   def main(args: Array[String]) {
     //This must be reopened each time main is called.
-    val newErr = new PrintWriter(new FileWriter(errLogFile, /* append = */ true), /* autoFlush = */ true)
+    val newErr = new PrintWriter(new FileWriter(errLogName, /* append = */ true), /* autoFlush = */ true)
     newErr.println(s"Starting in ${new File(".").getCanonicalPath()}")
     try {
       errLogger.withValue(newErr) {
