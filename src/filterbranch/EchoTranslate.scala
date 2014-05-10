@@ -32,14 +32,18 @@ object EchoTranslate {
       (Process(s"git rev-parse -q $partialHash", cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine)).trim
     }
 
+  private val debug = true
   //Implements map from git-filter-branch.
   def mapHash(hash: String) =
     Try[String] {
       val output = tmpDirF / "map" / hash
-      if (output.exists())
-        Source.fromFile(output).mkString.trim()
-      else {
-        val errMsg = s"${output.getCanonicalPath} does not exist!"
+      if (output.exists()) {
+        val ret = Source.fromFile(output).mkString.trim()
+        if (debug)
+          errLogger.value println s"Debug: mapped $hash to $ret"
+        ret
+      } else {
+        val errMsg = s"mapping for $hash not found: ${output.getCanonicalPath} does not exist."
         errLogger.value println errMsg
         throw new FileNotFoundException(errMsg)
       }
