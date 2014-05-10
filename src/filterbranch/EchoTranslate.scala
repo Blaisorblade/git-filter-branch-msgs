@@ -91,12 +91,15 @@ object EchoTranslate {
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
     (getOutput(s"git rev-parse -q --verify $partialHash^{commit} --")) ||| fail()
 
-  def prettify(hash: String): String =
+  def getTitle(hash: String) =
+    getOutput(s"""git --no-pager log --pretty="%s" -n1 ${hash}""")
+
+  def prettify(hash: String)(titleOpt: Error[String] = getTitle(hash)): String =
     (if (doPrettify)
-      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""")
+      titleOpt map (title => s"""${hash take 7} - "${title}"""")
     else "".left) | hash
 
-  //Implements map from git-filter-branch.
+  //Based on map from git-filter-branch.
   def mapHash(hash: String): Error[String] = {
     val output = tmpDirVar.value / "map" / hash
     if (output.exists()) {
@@ -104,15 +107,21 @@ object EchoTranslate {
         content <- tryErr(Source.fromFile(output).mkString.trim())
         mapped <-
           if (!content.isEmpty() && content.split("\n").size == 1) {
-            if (debug)
-              errLog(s"Debug: mapped ${prettify(hash)} to ${prettify(content)}")
             content.right
           } else {
-            fail(s"${prettify(hash)} maps to zero or multiple hashes, skipping it")
+            fail(s"${prettify(hash)()} maps to zero or multiple hashes, skipping it")
           }
-      } yield mapped
+        //Discards mapping if title does not match (which is possible, because git-filter-branch's mapping is approximated).
+        hashTitle <- getTitle(hash)
+        mappedTitle <- getTitle(mapped)
+        _ <- if (hashTitle == mappedTitle) ().right else fail(s"")
+      } yield {
+        if (debug)
+          errLog(s"Debug: mapped ${prettify(hash)(hashTitle.right)} to ${prettify(content)(mappedTitle.right)}")
+        mapped
+      }
     } else {
-      fail(s"mapping for ${prettify(hash)} not found: ${output.getCanonicalPath} does not exist.")
+      fail(s"mapping for ${prettify(hash)()} not found: ${output.getCanonicalPath} does not exist.")
     }
   }
 
