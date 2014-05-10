@@ -92,5 +92,10 @@ object Server {
         "Replaces commit hashes by their rewritten version while running git-filter-branch",
         Class.forName(EchoTranslate.getClass().getName stripSuffix "$")))
     new Thread(server).start()
+    System.out.println("git-filter-branch-msgs: Nailgun Server "
+                + NGConstants.VERSION
+                + " started on port "
+                + NGConstants.DEFAULT_PORT
+                + ".");
   }
 }
