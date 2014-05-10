@@ -32,7 +32,7 @@ object EchoTranslate {
     Try[String] {
       // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
       //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
-      (Process(s"git rev-parse -q --verify $partialHash --", cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine)).trim
+      (Process(s"git rev-parse -q --verify $partialHash^{commit} --", cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine)).trim
     }
 
   private val debug = true
