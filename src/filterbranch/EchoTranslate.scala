@@ -61,7 +61,7 @@ object EchoTranslate {
 
   def main(args: Array[String]) {
     //This must be reopened each time main is called.
-    val newErr = new PrintWriter(new FileWriter(cwd.value / errLogName, /* append = */ true), /* autoFlush = */ true)
+    val newErr = new PrintWriter(new FileWriter(errLogName, /* append = */ true), /* autoFlush = */ true)
     newErr.println(s"Starting in ${cwd.value.getCanonicalPath()}")
     try {
       errLogger.withValue(newErr) {
