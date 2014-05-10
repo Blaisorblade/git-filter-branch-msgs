@@ -89,7 +89,7 @@ object EchoTranslate {
         (for {
           completed <- canonicalizeHash(possibleHash)
           mapped <- mapHash(completed)
-        } yield mapped.trim()) valueOr { err =>
+        } yield mapped) valueOr { err =>
           errLog(err)
           possibleHash
         }
