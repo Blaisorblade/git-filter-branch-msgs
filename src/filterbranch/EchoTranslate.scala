@@ -11,6 +11,7 @@ import scala.util.{DynamicVariable, Failure, Success, Try}
 import scalaz._
 import \/._
 import std.boolean._
+import std.option._
 import syntax.id._
 import syntax.monad._
 import syntax.std.option._
@@ -46,10 +47,10 @@ object EchoTranslate {
 
   val cwd = new DynamicVariable[File](new File("."))
 
-  type Error[T] = \/[String, T]
+  type Error[T] = \/[Option[String], T]
 
-  def fail[T](err: String): Error[T] = err.left
-  def fail[T](): Error[T] = "".left
+  def fail[T](err: String): Error[T] = err.some.left
+  def fail[T](): Error[T] = none.left
 
   def tryErr[T](t: => T): Error[T] = Try(t) match {
     case Success(t) => t.right
@@ -96,7 +97,7 @@ object EchoTranslate {
       aMatch => {
         val possibleHash = aMatch.matched
         (canonicalizeHash(possibleHash) >>= mapHash) valueOr { err =>
-          if (!err.isEmpty()) errLog(err)
+          err map (errLog)
           possibleHash
         }
       })
