@@ -1,16 +1,18 @@
 package filterbranch
 
-import java.io.{File, FileNotFoundException, FileWriter, PrintWriter}
+import java.io.{File, FileWriter, PrintWriter}
 import java.net.InetAddress
 
 import scala.io.Source
 import scala.language.implicitConversions
 import scala.sys.process.{Process, ProcessLogger}
-import scala.util.{DynamicVariable, Failure, Try}
+import scala.util.{DynamicVariable, Failure, Success, Try}
 
 import scalaz._
+import \/._
 import std.boolean._
-import std.option._
+import syntax.id._
+import syntax.monad._
 import syntax.std.option._
 import syntax.std.boolean._
 
@@ -32,14 +34,22 @@ object EchoTranslate {
   def tmpDirF = cwd.value / ".." / ".." / tmpDir
   val errLogName = "echo-translate.log"
   val errLogger = new DynamicVariable[PrintWriter](null)
+  val errLog = (errLine: String) => errLogger.value println errLine
+
   val cwd = new DynamicVariable[File](new File("."))
 
-  //Warning: the command is split by spaces, without respecting quotes!
-  def getOutput(cmd: String) = Try[String](
-    (Process(cmd, cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine))
-  ).toOption
+  type Error[T] = \/[String, T]
+  def tryErr[T](t: => T): Error[T] = Try(t) match {
+    case Success(t) => t.right
+    case Failure(e) => e.getMessage().left
+  }
 
-  def canonicalizeHash(partialHash: String): Option[String] =
+  //Warning: the command is split by spaces, without respecting quotes!
+  def getOutput(cmd: String) = tryErr[String] {
+    (Process(cmd, cwd.value) !! ProcessLogger(errLog))
+  }
+
+  def canonicalizeHash(partialHash: String) =
     // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
     getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim)
@@ -48,25 +58,27 @@ object EchoTranslate {
   private val doPrettify = true
 
   def prettify(hash: String): String =
-    option(doPrettify,
-      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""")).flatten | hash
+    (if (doPrettify)
+      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""")
+    else "".left) | hash
 
   //Implements map from git-filter-branch.
-  def mapHash(hash: String): Option[String] = {
+  def mapHash(hash: String): Error[String] = {
     val output = tmpDirF / "map" / hash
     if (output.exists()) {
       for {
-        content <- Try[String](Source.fromFile(output).mkString.trim()).toOption
-        _ <- if (content.split("\n").size > 1) some(()) else {errLogger.value println s"$hash maps to multiple hashes, skipping it"; none}
-      } yield {
-        if (debug)
-          errLogger.value println s"Debug: mapped $hash to $content"
-        content
-      }
+        content <- tryErr(Source.fromFile(output).mkString.trim())
+        mapped <-
+          if (content.split("\n").size > 1) {
+            if (debug)
+              errLog(s"Debug: mapped $hash to $content")
+            content.right
+          } else {
+            s"$hash maps to multiple hashes, skipping it".left
+          }
+      } yield mapped
     } else {
-      val errMsg = s"mapping for $hash not found: ${output.getCanonicalPath} does not exist."
-      errLogger.value println errMsg
-      none
+      s"mapping for $hash not found: ${output.getCanonicalPath} does not exist.".left
     }
   }
 
@@ -77,7 +89,10 @@ object EchoTranslate {
         (for {
           completed <- canonicalizeHash(possibleHash)
           mapped <- mapHash(completed)
-        } yield mapped.trim()) | possibleHash
+        } yield mapped.trim()) valueOr { err =>
+          errLog(err)
+          possibleHash
+        }
       })
 
   def main(args: Array[String]) {
