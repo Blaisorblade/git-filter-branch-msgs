@@ -52,7 +52,7 @@ object EchoTranslate {
   def canonicalizeHash(partialHash: String) =
     // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
-    getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim)
+    getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim) leftMap (_ => "")
 
   private val debug = true
   private val doPrettify = true
@@ -87,7 +87,7 @@ object EchoTranslate {
       aMatch => {
         val possibleHash = aMatch.matched
         (canonicalizeHash(possibleHash) >>= mapHash) valueOr { err =>
-          errLog(err)
+          if (!err.isEmpty()) errLog(err)
           possibleHash
         }
       })
