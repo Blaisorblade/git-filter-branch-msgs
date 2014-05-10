@@ -1,7 +1,7 @@
 git-filter-branch-msgs
 ==================
 
-Update mentions of hashes in commits messages — for filter-branch. Implemented in Scala.
+Update mentions of hashes in commits messages — for `git-filter-branch`. In Scala.
 
 Goal
 ----
