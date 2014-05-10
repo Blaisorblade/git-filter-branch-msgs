@@ -105,10 +105,10 @@ object EchoTranslate {
         mapped <-
           if (!content.isEmpty() && content.split("\n").size == 1) {
             if (debug)
-              errLog(s"Debug: mapped $hash to $content")
+              errLog(s"Debug: mapped ${prettify(hash)} to ${prettify(content)}")
             content.right
           } else {
-            fail(s"$hash maps to zero or multiple hashes, skipping it")
+            fail(s"${prettify(hash)} maps to zero or multiple hashes, skipping it")
           }
       } yield mapped
     } else {
