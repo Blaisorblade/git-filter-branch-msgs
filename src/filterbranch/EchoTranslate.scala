@@ -6,7 +6,7 @@ import java.net.InetAddress
 import scala.io.Source
 import scala.language.implicitConversions
 import scala.sys.process.{Process, ProcessLogger}
-import scala.util.{DynamicVariable, Try}
+import scala.util.{DynamicVariable, Failure, Try}
 
 import com.martiansoftware.nailgun.{Alias, NGConstants, NGContext, NGServer}
 
@@ -37,20 +37,21 @@ object EchoTranslate {
 
   private val debug = true
   //Implements map from git-filter-branch.
-  def mapHash(hash: String) =
-    Try[String] {
-      val output = tmpDirF / "map" / hash
-      if (output.exists()) {
+  def mapHash(hash: String): Try[String] = {
+    val output = tmpDirF / "map" / hash
+    if (output.exists()) {
+      Try[String] {
         val ret = Source.fromFile(output).mkString.trim()
         if (debug)
           errLogger.value println s"Debug: mapped $hash to $ret"
         ret
-      } else {
-        val errMsg = s"mapping for $hash not found: ${output.getCanonicalPath} does not exist."
-        errLogger.value println errMsg
-        throw new FileNotFoundException(errMsg)
       }
+    } else {
+      val errMsg = s"mapping for $hash not found: ${output.getCanonicalPath} does not exist."
+      errLogger.value println errMsg
+      Failure(new FileNotFoundException(errMsg))
     }
+  }
 
   def filter(inpLine: String): String =
     filterCommitId.replaceAllIn(inpLine,
