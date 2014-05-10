@@ -47,9 +47,13 @@ object EchoTranslate {
   val cwd = new DynamicVariable[File](new File("."))
 
   type Error[T] = \/[String, T]
+
+  def fail[T](err: String): Error[T] = err.left
+  def fail[T](): Error[T] = "".left
+
   def tryErr[T](t: => T): Error[T] = Try(t) match {
     case Success(t) => t.right
-    case Failure(e) => e.getMessage().left
+    case Failure(e) => fail(e.getMessage())
   }
 
   //Warning: the command is split by spaces, without respecting quotes!
@@ -60,7 +64,7 @@ object EchoTranslate {
   def canonicalizeHash(partialHash: String): Error[String] =
     // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
-    getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim) leftMap (_ => "")
+    (getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim)) ||| fail()
 
   def prettify(hash: String): String =
     (if (doPrettify)
@@ -79,11 +83,11 @@ object EchoTranslate {
               errLog(s"Debug: mapped $hash to $content")
             content.right
           } else {
-            s"$hash maps to zero or multiple hashes, skipping it".left
+            fail(s"$hash maps to zero or multiple hashes, skipping it")
           }
       } yield mapped
     } else {
-      s"mapping for ${prettify(hash)} not found: ${output.getCanonicalPath} does not exist.".left
+      fail(s"mapping for ${prettify(hash)} not found: ${output.getCanonicalPath} does not exist.")
     }
   }
 
