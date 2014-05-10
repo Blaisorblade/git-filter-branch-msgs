@@ -21,6 +21,11 @@ import com.martiansoftware.nailgun.{Alias, NGConstants, NGContext, NGServer}
 import PathConvs._
 
 object EchoTranslate {
+  //Configuration settings.
+  private val debug = true
+  private val doPrettify = true
+  private val debugCwd = false
+
   //Minimal length of hex string for it to be considered an hash.
   val minLength = 5
   // XXX: this can be configured for git-filter-branch, we should allow the same.
@@ -29,10 +34,13 @@ object EchoTranslate {
   //Neither is counted toward the total.
   val filterCommitId = raw"""((?<= )|^)\b[0-9a-f]{${minLength},40}\b""".r
 
+  val errLogName = "echo-translate.log"
+
+  // End configuration.
+
   //XXX: git-filter-branch-msgs gets called inside .git-rewrite/t, so we need to compensate for it.
   //However, I think we need something more robust — like finding enclosing .git-rewrite folders.
   def tmpDirF = cwd.value / ".." / ".." / tmpDir
-  val errLogName = "echo-translate.log"
   val errLogger = new DynamicVariable[PrintWriter](null)
   val errLog = (errLine: String) => errLogger.value println errLine
 
@@ -53,9 +61,6 @@ object EchoTranslate {
     // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
     getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim) leftMap (_ => "")
-
-  private val debug = true
-  private val doPrettify = true
 
   def prettify(hash: String): String =
     (if (doPrettify)
@@ -92,7 +97,6 @@ object EchoTranslate {
         }
       })
 
-  val debugCwd = false
   def main(args: Array[String]) {
     //This must be reopened each time main is called.
     val newErr = new PrintWriter(new FileWriter(errLogName, /* append = */ true), /* autoFlush = */ true)
