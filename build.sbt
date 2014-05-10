@@ -1,3 +1,6 @@
+import com.typesafe.sbt.SbtNativePackager._
+import NativePackagerKeys._
+
 name := "git-filter-branch-msgs"
 
 scalaVersion := "2.11.0"
@@ -18,3 +21,5 @@ mainClass := Some("filterbranch.Server")
 mainClass in Compile := mainClass.value
 
 packageArchetype.java_application
+
+bashScriptConfigLocation := Some("${app_home}/../conf/jvmopts")
