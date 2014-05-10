@@ -35,11 +35,11 @@ object EchoTranslate {
   val cwd = new DynamicVariable[File](new File("."))
 
   //Warning: the command is split by spaces, without respecting quotes!
-  def getOutput(cmd: String) = Try[String] {
+  def getOutput(cmd: String) = Try[String](
     (Process(cmd, cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine))
-  }
+  ).toOption
 
-  def canonicalizeHash(partialHash: String): Try[String] =
+  def canonicalizeHash(partialHash: String): Option[String] =
     // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
     getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim)
@@ -49,7 +49,7 @@ object EchoTranslate {
 
   def prettify(hash: String): String =
     option(doPrettify,
-      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""").toOption).flatten | hash
+      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""")).flatten | hash
 
   //Implements map from git-filter-branch.
   def mapHash(hash: String): Option[String] = {
@@ -75,9 +75,9 @@ object EchoTranslate {
       aMatch => {
         val possibleHash = aMatch.matched
         (for {
-          completed <- canonicalizeHash(possibleHash).toOption
+          completed <- canonicalizeHash(possibleHash)
           mapped <- mapHash(completed)
-        } yield mapped.trim()) getOrElse possibleHash
+        } yield mapped.trim()) | possibleHash
       })
 
   def main(args: Array[String]) {
