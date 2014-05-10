@@ -93,7 +93,7 @@ object EchoTranslate {
 
   def prettify(hash: String): String =
     (if (doPrettify)
-      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""")
+      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""") map (_.trim)
     else "".left) | hash
 
   //Implements map from git-filter-branch.
