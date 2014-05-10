@@ -83,17 +83,17 @@ object EchoTranslate {
 
   //Warning: the command is split by spaces, without respecting quotes!
   def getOutput(cmd: String) = tryErr[String] {
-    (Process(cmd, cwdVar.value) !! ProcessLogger(errLog))
+    (Process(cmd, cwdVar.value) !! ProcessLogger(errLog)).trim
   }
 
   def canonicalizeHash(partialHash: String): Error[String] =
     // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
-    (getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim)) ||| fail()
+    (getOutput(s"git rev-parse -q --verify $partialHash^{commit} --")) ||| fail()
 
   def prettify(hash: String): String =
     (if (doPrettify)
-      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""") map (_.trim)
+      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""")
     else "".left) | hash
 
   //Implements map from git-filter-branch.
