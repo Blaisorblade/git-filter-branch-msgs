@@ -8,6 +8,10 @@ import scala.language.implicitConversions
 import scala.sys.process.{Process, ProcessLogger}
 import scala.util.{DynamicVariable, Failure, Try}
 
+import scalaz._
+import std.boolean._
+import syntax.std.option._
+
 import com.martiansoftware.nailgun.{Alias, NGConstants, NGContext, NGServer}
 
 import PathConvs._
@@ -42,10 +46,8 @@ object EchoTranslate {
   private val doPrettify = true
 
   def prettify(hash: String): String =
-    (if (doPrettify) {
-      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""").toOption
-    } else
-      None) getOrElse hash
+    option(doPrettify,
+      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""").toOption).flatten | hash
 
   //Implements map from git-filter-branch.
   def mapHash(hash: String): Try[String] = {
