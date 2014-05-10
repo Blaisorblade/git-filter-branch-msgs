@@ -41,11 +41,11 @@ object EchoTranslate {
 
   //XXX: git-filter-branch-msgs gets called inside .git-rewrite/t, so we need to compensate for it.
   //However, I think we need something more robust — like finding enclosing .git-rewrite folders.
-  def tmpDirF = cwd.value / ".." / ".." / tmpDir
+  def tmpDirVar = cwdVar.value / ".." / ".." / tmpDir
   val errLogger = new DynamicVariable[PrintWriter](null)
   val errLog = (errLine: String) => errLogger.value println errLine
 
-  val cwd = new DynamicVariable[File](new File("."))
+  val cwdVar = new DynamicVariable[File](new File("."))
 
   type Error[T] = \/[Option[String], T]
 
@@ -59,7 +59,7 @@ object EchoTranslate {
 
   //Warning: the command is split by spaces, without respecting quotes!
   def getOutput(cmd: String) = tryErr[String] {
-    (Process(cmd, cwd.value) !! ProcessLogger(errLog))
+    (Process(cmd, cwdVar.value) !! ProcessLogger(errLog))
   }
 
   def canonicalizeHash(partialHash: String): Error[String] =
@@ -74,7 +74,7 @@ object EchoTranslate {
 
   //Implements map from git-filter-branch.
   def mapHash(hash: String): Error[String] = {
-    val output = tmpDirF / "map" / hash
+    val output = tmpDirVar / "map" / hash
     if (output.exists()) {
       for {
         content <- tryErr(Source.fromFile(output).mkString.trim())
@@ -106,7 +106,7 @@ object EchoTranslate {
     //This must be reopened each time main is called.
     val newErr = new PrintWriter(new FileWriter(errLogName, /* append = */ true), /* autoFlush = */ true)
     if (debugCwd)
-      newErr.println(s"Starting in ${cwd.value.getCanonicalPath()}")
+      newErr.println(s"Starting in ${cwdVar.value.getCanonicalPath()}")
     try {
       errLogger.withValue(newErr) {
         val outWriter = new PrintWriter(System.out, /*autoFlush = */ true)
@@ -125,7 +125,7 @@ object EchoTranslate {
 
   def nailMain(context: NGContext) {
     context.assertLocalClient()
-    cwd.value = new File(context.getWorkingDirectory())
+    cwdVar.value = new File(context.getWorkingDirectory())
     doMain(context.getArgs())
   }
 }
