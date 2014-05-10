@@ -19,8 +19,7 @@ I think what's below should list all the steps needed, but you should not do the
 2. `ln -s $(which ng) ~/bin/git-filter-branch-msgs`
 3. Run `sbt stage` in this directory. This requires [SBT](http://www.scala-sbt.org/) 0.13 or later.
 4. Run the server with `./target/universal/stage/bin/filter-branch-msgs`
-5. Now you can use it with git-filter-branch.
-
+5. Now you can use it with `git-filter-branch`.
     The intended usage pattern is through
 
   ```
@@ -29,8 +28,8 @@ I think what's below should list all the steps needed, but you should not do the
     --msg-filter 'git-filter-branch-msgs' $your_other_filters_here
   ```
 
-6. Kill the server with Ctrl-C.
-7. The server will create a log, named `echo-translate.log`, wherever the client (`git-filter-branch-msgs`) is run.
+6. After running `git-filter-branch`, you can kill the server with Ctrl-C.
+7. The server will create a log, named `echo-translate.log`, where it is running. Check it for anything amiss.
 
 It should be possible in theory to use this program without nailgun, but that will start a JVM for each commit, so it is not recommended for any non-trivial project.
 Plus, I don't provide complete docs for it (you need to change `mainClass` in `build.sbt` to `filterbranch.EchoTranslate` and redo `sbt stage`, then you'll need git to use the produced script). I could do it if there's interest.
