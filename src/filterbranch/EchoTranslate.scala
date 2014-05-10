@@ -79,7 +79,7 @@ object EchoTranslate {
 object Server {
   def main(args: Array[String]) {
     val server = new NGServer(InetAddress.getLoopbackAddress(), NGConstants.DEFAULT_PORT)
-    server.getAliasManager().addAlias(new Alias("git-rev-translate", "Foo", Class.forName(EchoTranslate.getClass().getName stripSuffix "$")))
+    server.getAliasManager().addAlias(new Alias("git-filter-branch-msgs", "Foo", Class.forName(EchoTranslate.getClass().getName stripSuffix "$")))
     new Thread(server).start()
   }
 }
