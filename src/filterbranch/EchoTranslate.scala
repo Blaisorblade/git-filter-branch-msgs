@@ -17,7 +17,9 @@ object EchoTranslate {
   val minLength = 5
   // XXX: this can be configured for git-filter-branch, we should allow the same.
   val tmpDir = ".git-rewrite"
-  val filterCommitId = raw""" \b[0-9a-f]{${minLength},40}\b""".r
+  //((?<= )|^) means that there should be, before the match, either a space or the beginning of the line.
+  //Neither is counted toward the total.
+  val filterCommitId = raw"""((?<= )|^)\b[0-9a-f]{${minLength},40}\b""".r
 
   //XXX: git-filter-branch-msgs gets called inside .git-rewrite/t, so we need to compensate for it.
   //However, I think we need something more robust — like finding enclosing .git-rewrite folders.
