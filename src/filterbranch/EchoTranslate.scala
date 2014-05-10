@@ -39,13 +39,53 @@ object EchoTranslate {
 
   // End configuration.
 
+  def parentDir(f: File) = Option(f.getParentFile())
+  def parents(f: File): Stream[File] = f #:: (parentDir(f).fold(Stream.empty[File])(parents))
+  def ifExists(f: File) = if (f.exists()) f.some else none
+  def containsDotGit(f: File) = f / ".git" exists()
+
+  def findParentContainingDotGit(f: File): Option[File] =
+    parentDir(f) >>= { parent =>
+      if (parent / ".git" exists())
+        f.some
+      else
+        findParentContainingDotGit(parent)
+    }
+
   //XXX: git-filter-branch-msgs gets called inside .git-rewrite/t, so we need to compensate for it.
   //However, I think we need something more robust — like finding enclosing .git-rewrite folders.
-  def tmpDirVar = cwdVar.value / ".." / ".." / tmpDir
+  //def tmpDirF = findParentContainingDotGit(cwd.value) map (_ / tmpDir)
+  val cwdVar = new DynamicVariable[File](null)
+  val tmpDirVar = new DynamicVariable[File](null)
+
+  def getTmpDir(cwd: File) = {
+    val (withoutDotGit, rest) = parents(cwd) span (f => !containsDotGit(f))
+    for {
+      withDotGit <- rest.headOption
+      tmpDirFile <- ifExists(withDotGit / tmpDir) orElse withoutDotGit.lastOption
+    } yield tmpDirFile
+  }
+
+  def setCwd(f: File) = {
+    val cwd = f.getCanonicalFile()
+    (getTmpDir(cwd) map { tmpDirFile =>
+      tmpDirVar.value = tmpDirFile
+      cwdVar.value = cwd
+    }).isDefined
+     /*match {
+      case (withoutDotGit, withDotGit #:: rest) =>
+        //val untilGit = withoutDotGit #::: Stream(withDotGit)
+        tmpDirF.value =
+          ifExists(withDotGit / tmpDir) orElse withoutDotGit.lastOption getOrElse ???
+        cwd.value = cwdV
+        true
+      case (first, _) =>
+        false
+    }*/
+  }
+
   val errLogger = new DynamicVariable[PrintWriter](null)
   val errLog = (errLine: String) => errLogger.value println errLine
-
-  val cwdVar = new DynamicVariable[File](new File("."))
 
   type Error[T] = \/[Option[String], T]
 
@@ -74,7 +114,7 @@ object EchoTranslate {
 
   //Implements map from git-filter-branch.
   def mapHash(hash: String): Error[String] = {
-    val output = tmpDirVar / "map" / hash
+    val output = tmpDirVar.value / "map" / hash
     if (output.exists()) {
       for {
         content <- tryErr(Source.fromFile(output).mkString.trim())
@@ -120,12 +160,13 @@ object EchoTranslate {
   }
 
   def main(args: Array[String]) {
+    unless(setCwd(new File(".")))(System.exit(1))
     doMain(args)
   }
 
   def nailMain(context: NGContext) {
     context.assertLocalClient()
-    cwdVar.value = new File(context.getWorkingDirectory())
+    unless(setCwd(new File(context.getWorkingDirectory())))(context.exit(1))
     doMain(context.getArgs())
   }
 }
