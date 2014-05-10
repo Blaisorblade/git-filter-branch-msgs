@@ -9,8 +9,9 @@ import scala.sys.process.{Process, ProcessLogger}
 import scala.util.{DynamicVariable, Failure, Success, Try}
 
 import scalaz._
+import std.boolean._ //Needed in any case because of https://github.com/scalaz/scalaz/issues/704
+//import Scalaz._ //Better to explore the library.
 import \/._
-import std.boolean._
 import std.option._
 import syntax.id._
 import syntax.monad._
