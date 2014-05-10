@@ -44,16 +44,8 @@ object EchoTranslate {
   def ifExists(f: File) = if (f.exists()) f.some else none
   def containsDotGit(f: File) = f / ".git" exists()
 
-  def findParentContainingDotGit(f: File): Option[File] =
-    parentDir(f) >>= { parent =>
-      if (parent / ".git" exists())
-        f.some
-      else
-        findParentContainingDotGit(parent)
-    }
-
-  //XXX: git-filter-branch-msgs gets called inside .git-rewrite/t, so we need to compensate for it.
-  //However, I think we need something more robust — like finding enclosing .git-rewrite folders.
+  //git-filter-branch-msgs gets called inside .git-rewrite/t, so we need to compensate for it.
+  //But we can do something more robust — like finding enclosing .git folders, .git-rewrite folders.
   //def tmpDirF = findParentContainingDotGit(cwd.value) map (_ / tmpDir)
   val cwdVar = new DynamicVariable[File](null)
   val tmpDirVar = new DynamicVariable[File](null)
@@ -62,6 +54,7 @@ object EchoTranslate {
     val (withoutDotGit, rest) = parents(cwd) span (f => !containsDotGit(f))
     for {
       withDotGit <- rest.headOption
+      //Search for tmpDir next to .git; failing that, just take whatever we found before finding .git.
       tmpDirFile <- ifExists(withDotGit / tmpDir) orElse withoutDotGit.lastOption
     } yield tmpDirFile
   }
@@ -72,16 +65,6 @@ object EchoTranslate {
       tmpDirVar.value = tmpDirFile
       cwdVar.value = cwd
     }).isDefined
-     /*match {
-      case (withoutDotGit, withDotGit #:: rest) =>
-        //val untilGit = withoutDotGit #::: Stream(withDotGit)
-        tmpDirF.value =
-          ifExists(withDotGit / tmpDir) orElse withoutDotGit.lastOption getOrElse ???
-        cwd.value = cwdV
-        true
-      case (first, _) =>
-        false
-    }*/
   }
 
   val errLogger = new DynamicVariable[PrintWriter](null)
