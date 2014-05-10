@@ -92,10 +92,12 @@ object EchoTranslate {
         }
       })
 
+  val debugCwd = false
   def main(args: Array[String]) {
     //This must be reopened each time main is called.
     val newErr = new PrintWriter(new FileWriter(errLogName, /* append = */ true), /* autoFlush = */ true)
-    newErr.println(s"Starting in ${cwd.value.getCanonicalPath()}")
+    if (debugCwd)
+      newErr.println(s"Starting in ${cwd.value.getCanonicalPath()}")
     try {
       errLogger.withValue(newErr) {
         val outWriter = new PrintWriter(System.out, /*autoFlush = */ true)
