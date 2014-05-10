@@ -55,9 +55,12 @@ object EchoTranslate {
     if (output.exists()) {
       Try[String] {
         val ret = Source.fromFile(output).mkString.trim()
-        if (debug)
-          errLogger.value println s"Debug: mapped $hash to $ret"
-        ret
+        if (ret.split("\n").size > 1) {
+          if (debug)
+            errLogger.value println s"Debug: mapped $hash to $ret"
+          ret
+        } else
+          throw new Exception("multiple lines") //XXX ugly
       }
     } else {
       val errMsg = s"mapping for $hash not found: ${output.getCanonicalPath} does not exist."
