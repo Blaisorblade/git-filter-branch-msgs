@@ -29,7 +29,7 @@ object EchoTranslate {
   def canonicalizeHash(partialHash: String) =
     Try[String] {
       // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
-      (Process(s"git rev-parse $partialHash", cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine)).trim
+      (Process(s"git rev-parse -q $partialHash", cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine)).trim
     }
 
   //Implements map from git-filter-branch.
