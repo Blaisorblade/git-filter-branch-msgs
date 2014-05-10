@@ -78,7 +78,7 @@ object EchoTranslate {
           }
       } yield mapped
     } else {
-      s"mapping for $hash not found: ${output.getCanonicalPath} does not exist.".left
+      s"mapping for ${prettify(hash)} not found: ${output.getCanonicalPath} does not exist.".left
     }
   }
 
