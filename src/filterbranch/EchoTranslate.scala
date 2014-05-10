@@ -102,7 +102,7 @@ object EchoTranslate {
         }
       })
 
-  def main(args: Array[String]) {
+  def doMain(args: Array[String]) {
     //This must be reopened each time main is called.
     val newErr = new PrintWriter(new FileWriter(errLogName, /* append = */ true), /* autoFlush = */ true)
     if (debugCwd)
@@ -119,10 +119,14 @@ object EchoTranslate {
     }
   }
 
+  def main(args: Array[String]) {
+    doMain(args)
+  }
+
   def nailMain(context: NGContext) {
     context.assertLocalClient()
     cwd.value = new File(context.getWorkingDirectory())
-    main(context.getArgs())
+    doMain(context.getArgs())
   }
 }
 
