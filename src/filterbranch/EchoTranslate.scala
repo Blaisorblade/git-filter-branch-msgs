@@ -86,10 +86,7 @@ object EchoTranslate {
     filterCommitId.replaceAllIn(inpLine,
       aMatch => {
         val possibleHash = aMatch.matched
-        (for {
-          completed <- canonicalizeHash(possibleHash)
-          mapped <- mapHash(completed)
-        } yield mapped) valueOr { err =>
+        (canonicalizeHash(possibleHash) >>= mapHash) valueOr { err =>
           errLog(err)
           possibleHash
         }
