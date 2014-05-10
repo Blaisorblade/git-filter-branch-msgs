@@ -19,7 +19,9 @@ object EchoTranslate {
   val tmpDir = ".git-rewrite"
   val filterCommitId = raw"""\b[0-9a-f]{${minLength},40}\b""".r
 
-  def tmpDirF = cwd.value / tmpDir
+  //XXX: git-filter-branch-msgs gets called inside .git-rewrite/t, so we need to compensate for it.
+  //However, I think we need something more robust — like finding enclosing .git-rewrite folders.
+  def tmpDirF = cwd.value / ".." / ".." / tmpDir
   val errLogName = "echo-translate.log"
   val errLogger = new DynamicVariable[PrintWriter](null)
   val cwd = new DynamicVariable[File](new File("."))
