@@ -10,7 +10,9 @@ import scala.util.{DynamicVariable, Failure, Try}
 
 import scalaz._
 import std.boolean._
+import std.option._
 import syntax.std.option._
+import syntax.std.boolean._
 
 import com.martiansoftware.nailgun.{Alias, NGConstants, NGContext, NGServer}
 
@@ -50,22 +52,21 @@ object EchoTranslate {
       getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""").toOption).flatten | hash
 
   //Implements map from git-filter-branch.
-  def mapHash(hash: String): Try[String] = {
+  def mapHash(hash: String): Option[String] = {
     val output = tmpDirF / "map" / hash
     if (output.exists()) {
-      Try[String] {
-        val ret = Source.fromFile(output).mkString.trim()
-        if (ret.split("\n").size > 1) {
-          if (debug)
-            errLogger.value println s"Debug: mapped $hash to $ret"
-          ret
-        } else
-          throw new Exception("multiple lines") //XXX ugly
+      for {
+        content <- Try[String](Source.fromFile(output).mkString.trim()).toOption
+        _ <- if (content.split("\n").size > 1) some(()) else {errLogger.value println s"$hash maps to multiple hashes, skipping it"; none}
+      } yield {
+        if (debug)
+          errLogger.value println s"Debug: mapped $hash to $content"
+        content
       }
     } else {
       val errMsg = s"mapping for $hash not found: ${output.getCanonicalPath} does not exist."
       errLogger.value println errMsg
-      Failure(new FileNotFoundException(errMsg))
+      none
     }
   }
 
@@ -74,7 +75,7 @@ object EchoTranslate {
       aMatch => {
         val possibleHash = aMatch.matched
         (for {
-          completed <- canonicalizeHash(possibleHash)
+          completed <- canonicalizeHash(possibleHash).toOption
           mapped <- mapHash(completed)
         } yield mapped.trim()) getOrElse possibleHash
       })
