@@ -28,6 +28,7 @@ object EchoTranslate {
   val errLogger = new DynamicVariable[PrintWriter](null)
   val cwd = new DynamicVariable[File](new File("."))
 
+  //Warning: the command is split by spaces, without respecting quotes!
   def getOutput(cmd: String) = Try[String] {
     (Process(cmd, cwd.value) !! ProcessLogger(errLine => errLogger.value println errLine))
   }
@@ -38,6 +39,14 @@ object EchoTranslate {
     getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim)
 
   private val debug = true
+  private val doPrettify = true
+
+  def prettify(hash: String): String =
+    (if (doPrettify) {
+      getOutput(s"""git --no-pager log --pretty=%h:"%s" -n1 ${hash}""").toOption
+    } else
+      None) getOrElse hash
+
   //Implements map from git-filter-branch.
   def mapHash(hash: String): Try[String] = {
     val output = tmpDirF / "map" / hash
