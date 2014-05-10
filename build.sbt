@@ -1,3 +1,5 @@
+name := "git-filter-branch-msgs"
+
 scalaVersion := "2.11.0"
 
 scalaSource in Compile := baseDirectory.value / "src"

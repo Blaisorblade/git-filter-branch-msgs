@@ -1,4 +1,4 @@
-filter-branch-msgs
+git-filter-branch-msgs
 ==================
 
 Update mentions of hashes in commits messages — for filter-branch. Implemented in Scala.
@@ -6,7 +6,7 @@ Update mentions of hashes in commits messages — for filter-branch. Implemented
 Goal
 ----
 
-Many commit messages mention other commits by hash. However, when using `git-filter-branch`, all hashes are changed completely, so such references are broken. `filter-branch-msgs` can update these references to point to the rewritten commits.
+Many commit messages mention other commits by hash. However, when using `git-filter-branch`, all hashes are changed completely, so such references are broken. `git-filter-branch-msgs` can update these references to point to the rewritten commits.
 
 Warning: I wrote this in an afternoon, and it's been tested only lightly. Plus, `git-filter-branch` is a dangerous beast anyway, so you're supposed to know what you're doing.
 
@@ -24,7 +24,7 @@ I think what's below should list all the steps needed, but you should not do the
     ```
     If you do not do that (for instance because it's inconvenient, or you are on Windows), you'll need to invoke the client as `ng git-filter-branch-msgs` instead.
 3. Run `sbt stage` in this directory to compile this program and generate launcher scripts for it. This requires [SBT](http://www.scala-sbt.org/) 0.13 or later; all other dependencies will be automatically downloaded and cached.
-4. Run the server with `./target/universal/stage/bin/filter-branch-msgs`
+4. Run the server with `./target/universal/stage/bin/git-filter-branch-msgs`
 5. Now you can use it with `git-filter-branch`.
     The intended usage pattern is through
 
