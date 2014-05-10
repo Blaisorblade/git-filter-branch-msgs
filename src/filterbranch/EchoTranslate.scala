@@ -69,12 +69,12 @@ object EchoTranslate {
       for {
         content <- tryErr(Source.fromFile(output).mkString.trim())
         mapped <-
-          if (content.split("\n").size > 1) {
+          if (!content.isEmpty() && content.split("\n").size == 1) {
             if (debug)
               errLog(s"Debug: mapped $hash to $content")
             content.right
           } else {
-            s"$hash maps to multiple hashes, skipping it".left
+            s"$hash maps to zero or multiple hashes, skipping it".left
           }
       } yield mapped
     } else {
