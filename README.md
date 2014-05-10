@@ -14,17 +14,20 @@ Installation/usage instruction
 ------------------------
 
 I think what's below should be sufficient, but 
+
 1. Install [nailgun 0.9.1](http://www.martiansoftware.com/nailgun/). You'll just need the C client, not the Java part.
 2. `ln -s $(which ng) ~/bin/git-filter-branch-msgs`
 3. Run `sbt stage` in this directory. This requires [SBT](http://www.scala-sbt.org/) 0.13 or later.
 4. Run the server with ./target/universal/stage/bin/filter-branch-msgs
 5. Now you can use it with git-filter-branch.
 
-The intended usage pattern is through
+    The intended usage pattern is through
 
-```git-filter-branch
-  --date-order \
-  --msg-filter 'git-filter-branch-msgs' $your_other_filters_here```
+  ```
+  git-filter-branch
+    --date-order \
+    --msg-filter 'git-filter-branch-msgs' $your_other_filters_here
+  ```
 
 6. Kill the server with Ctrl-C.
 7. The server will create a log, named `echo-translate.log`, wherever the client (`git-filter-branch-msgs`) is run.
