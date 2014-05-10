@@ -57,7 +57,7 @@ object EchoTranslate {
     (Process(cmd, cwd.value) !! ProcessLogger(errLog))
   }
 
-  def canonicalizeHash(partialHash: String) =
+  def canonicalizeHash(partialHash: String): Error[String] =
     // Run cmd, log lines on standard error, return the standard output, or fail if the exit status is nonzero.
     //-q will give errors in case of serious problems, but will just exit with a non-zero code if the commit does not exist.
     getOutput(s"git rev-parse -q --verify $partialHash^{commit} --") map (_.trim) leftMap (_ => "")
