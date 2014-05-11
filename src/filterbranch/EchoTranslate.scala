@@ -92,7 +92,7 @@ object EchoTranslate {
     (getOutput(s"git rev-parse -q --verify $partialHash^{commit} --")) ||| fail()
 
   def getTitle(hash: String) =
-    getOutput(s"""git --no-pager log --pretty="%s" -n1 ${hash}""")
+    getOutput(s"""git --no-pager log --pretty=%s -n1 ${hash}""")
 
   def prettify(hash: String)(titleOpt: Error[String] = getTitle(hash)): String =
     (if (doPrettify)
