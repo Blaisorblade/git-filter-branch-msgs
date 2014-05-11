@@ -114,7 +114,8 @@ object EchoTranslate {
         //Discards mapping if title does not match (which is possible, because git-filter-branch's mapping is approximated).
         hashTitle <- getTitle(hash)
         mappedTitle <- getTitle(mapped)
-        _ <- if (hashTitle == mappedTitle) ().right else fail(s"")
+        _ <- if (hashTitle == mappedTitle) ().right else
+          fail(s"Not mapping ${prettify(hash)(hashTitle.right)} to ${prettify(content)(mappedTitle.right)}")
       } yield {
         if (debug)
           errLog(s"Debug: mapped ${prettify(hash)(hashTitle.right)} to ${prettify(content)(mappedTitle.right)}")
