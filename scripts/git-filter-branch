@@ -268,7 +268,7 @@ case "$filter_subdir" in
 esac
 
 git rev-list --reverse --topo-order --default HEAD \
-	--parents --simplify-merges --stdin "$@" <../parse >../revs ||
+	--parents --simplify-merges --stdin --date-order "$@" <../parse >../revs ||
 	die "Could not get the commits"
 commits=$(wc -l <../revs | tr -d " ")
 
