@@ -6,9 +6,32 @@ Update mentions of hashes in commits messages — for `git-filter-branch`. In Sc
 Goal
 ----
 
-Many commit messages mention other commits by hash. However, when using `git-filter-branch`, all hashes are changed completely, so such references are broken. `git-filter-branch-msgs` can update these references to point to the rewritten commits.
+Many commit messages mention other commits by hash. However, when using `git-filter-branch`, all hashes are changed completely, so such references are broken. `git-filter-branch-msgs` updates these references to point to the rewritten commits.
 
-Warning: I wrote this in an afternoon, and it's been tested only lightly. Plus, `git-filter-branch` is a dangerous beast anyway, so you're supposed to know what you're doing.
+Request for comments
+--------------------
+
+Do you think this could be useful? If so, let me know, open issues when something does not work.
+There are a few known limitations, and I'll be happy to work on them (or accept contributions) if there's interest.
+
+Status
+------
+
+This is an early beta, written in a day and a half. It worked well for me on two splits in one project, but that's the testing it got.
+
+Moreover, `git-filter-branch` is a dangerous beast anyway, so you're supposed to know what you're doing.
+
+Limitations/bugs
+----
+
+* No command-line options for tuning settings.
+* Recognizing commit IDs requires heuristics, and they cannot be perfect. Right now, instances of [0-9a-f]* are rewritten if:
+   * They're at least 5 chars long (this should be configurable). 
+   * They are valid commit IDs, as identified by git itself.
+   * git-filter-branch already rewrote them to a commit with the same title.
+* No system testing whatsoever. Testing this requires quite some automation and I'm not sure how to best test it.
+* There's no "real" deployment yet.
+* The tool uses git command-line tools instead of any git binding (in particular, JGit). But to use this tool, you need an installation of command-line git tools, so I am not sure switching to JGit would be an improvement (there might be a performance improvement, but I'm not sure it's high enough).
 
 Installation/usage instruction
 ------------------------
@@ -30,9 +53,11 @@ I think what's below should list all the steps needed, but you should not do the
 
   ```bash
   git-filter-branch
-    --date-order \
-    --msg-filter 'git-filter-branch-msgs' $your_other_filters_here
+    --msg-filter 'git-filter-branch-msgs' $your_other_filters_here \
+    -- --date-order $other_git_rev_list_params
   ```
+
+    However, it turned out that currently --date-order must be added directly inside `git-filter-branch`.
 
 6. After running `git-filter-branch`, you can kill the server with Ctrl-C.
 7. The server will create a log, named `echo-translate.log`, where it is running. Check it for anything amiss.
