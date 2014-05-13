@@ -87,7 +87,7 @@ USAGE="[--env-filter <command>] [--tree-filter <command>]
 	[<rev-list options>...]"
 
 OPTIONS_SPEC=
-. git-sh-setup
+. $(git --exec-path)/git-sh-setup
 
 if [ "$(is_bare_repository)" = false ]; then
 	require_clean_work_tree 'rewrite branches'
