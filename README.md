@@ -57,7 +57,7 @@ I think what's below should list all the steps needed, but you should not do the
     -- --date-order $other_git_rev_list_params
   ```
 
-    However, it turned out that currently --date-order must be added directly inside `git-filter-branch`.
+    However, it turned out that currently --date-order must be added directly inside `git-filter-branch`. We provide a fixed version of git-filter-branch, incorporating this option directly, in`scripts/git-filter-branch`.
 
 6. After running `git-filter-branch`, you can kill the server with Ctrl-C.
 7. The server will create a log, named `echo-translate.log`, where it is running. Check it for anything amiss.
