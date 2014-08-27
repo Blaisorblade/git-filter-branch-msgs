@@ -3,7 +3,7 @@ import NativePackagerKeys._
 
 name := "git-filter-branch-msgs"
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.2"
 
 scalaSource in Compile := baseDirectory.value / "src"
 
